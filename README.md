@@ -83,13 +83,15 @@ Sensitive credentials are stored in a local `.env` file and excluded from versio
 
 ## Architecture
 
+```text
 Open-Meteo API
-        |
-        v
+      |
+      v
 Python Ingestion Script
-        |
-        v
+      |
+      v
 Snowflake Raw Layer
-        |
-        v
-Analytics Layer (Latest Weather per City)
+      |
+      v
+Analytics Layer
+(Latest Weather per City)
