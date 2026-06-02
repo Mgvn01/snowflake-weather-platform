@@ -1,47 +1,75 @@
+import os
 import requests
 import snowflake.connector
-import os
 from dotenv import load_dotenv
+
 
 load_dotenv()
 
-print("USER:", os.getenv("SNOWFLAKE_USER"))
-print("ACCOUNT:", os.getenv("SNOWFLAKE_ACCOUNT"))
 
-response = requests.get(
-    "https://api.open-meteo.com/v1/forecast?latitude=50.94&longitude=6.96&current=temperature_2m"
-)
+CITIES = [
+    {"city": "Cologne", "latitude": 50.94, "longitude": 6.96},
+    {"city": "Istanbul", "latitude": 41.01, "longitude": 28.97},
+    {"city": "London", "latitude": 51.50, "longitude": -0.12},
+]
 
-data = response.json()
 
-temperature = data["current"]["temperature_2m"]
+def fetch_temperature(latitude, longitude):
+    url = (
+        "https://api.open-meteo.com/v1/forecast"
+        f"?latitude={latitude}&longitude={longitude}&current=temperature_2m"
+    )
 
-print(temperature)
+    response = requests.get(url)
+    response.raise_for_status()
 
-conn = snowflake.connector.connect(
-    user=os.getenv("SNOWFLAKE_USER"),
-    password=os.getenv("SNOWFLAKE_PASSWORD"),
-    account=os.getenv("SNOWFLAKE_ACCOUNT"),
-    warehouse=os.getenv("SNOWFLAKE_WAREHOUSE"),
-    database=os.getenv("SNOWFLAKE_DATABASE"),
-    schema=os.getenv("SNOWFLAKE_SCHEMA")
-)
+    data = response.json()
+    return data["current"]["temperature_2m"]
 
-print("Connected to Snowflake")
 
-cur = conn.cursor()
+def connect_to_snowflake():
+    return snowflake.connector.connect(
+        user=os.getenv("SNOWFLAKE_USER"),
+        password=os.getenv("SNOWFLAKE_PASSWORD"),
+        account=os.getenv("SNOWFLAKE_ACCOUNT"),
+        warehouse=os.getenv("SNOWFLAKE_WAREHOUSE"),
+        database=os.getenv("SNOWFLAKE_DATABASE"),
+        schema=os.getenv("SNOWFLAKE_SCHEMA"),
+    )
 
-cur.execute(
-    """
-    INSERT INTO weather_data (city, temperature, recorded_at)
-    VALUES (%s, %s, CURRENT_TIMESTAMP())
-    """,
-    ("Cologne", temperature)
-)
 
-conn.commit()
+def insert_weather_data(cursor, city, temperature):
+    cursor.execute(
+        """
+        INSERT INTO weather_data (city, temperature, recorded_at)
+        VALUES (%s, %s, CURRENT_TIMESTAMP())
+        """,
+        (city, temperature),
+    )
 
-cur.close()
-conn.close()
 
-print("Inserted weather data into Snowflake")
+def main():
+    conn = connect_to_snowflake()
+    cursor = conn.cursor()
+
+    try:
+        for city_config in CITIES:
+            city = city_config["city"]
+            temperature = fetch_temperature(
+                city_config["latitude"],
+                city_config["longitude"]
+            )
+
+            insert_weather_data(cursor, city, temperature)
+            print(f"Inserted {city}: {temperature}°C")
+
+        conn.commit()
+        print("Weather data ingestion completed successfully.")
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+if __name__ == "__main__":
+    main()
