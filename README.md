@@ -80,3 +80,16 @@ Sensitive credentials are stored in a local `.env` file and excluded from versio
 - Explore Data Vault modelling concepts for scalable data warehousing
 - Extend analytics layer with historical weather trends
 - Investigate role and permission concepts within Snowflake Platform Engineering
+
+## Architecture
+
+Open-Meteo API
+        |
+        v
+Python Ingestion Script
+        |
+        v
+Snowflake Raw Layer
+        |
+        v
+Analytics Layer (Latest Weather per City)
