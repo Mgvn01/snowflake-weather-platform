@@ -74,8 +74,9 @@ Sensitive credentials are stored in a local `.env` file and excluded from versio
 
 ## Future Improvements
 
-- Support multiple cities dynamically
-- Add scheduling / automation
-- Add Docker support
-- Add CI/CD pipeline
-- Add dbt transformations
+- Add support for additional cities and configurable city lists
+- Implement data quality checks before ingestion
+- Automate execution through scheduled jobs
+- Explore Data Vault modelling concepts for scalable data warehousing
+- Extend analytics layer with historical weather trends
+- Investigate role and permission concepts within Snowflake Platform Engineering
