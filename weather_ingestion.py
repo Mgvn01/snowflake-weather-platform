@@ -55,10 +55,22 @@ def main():
     try:
         for city_config in CITIES:
             city = city_config["city"]
+
             temperature = fetch_temperature(
                 city_config["latitude"],
                 city_config["longitude"]
             )
+
+            # Data quality checks
+            if temperature is None:
+                raise ValueError(
+                    f"No temperature received for {city}"
+                )
+
+            if temperature < -50 or temperature > 60:
+                raise ValueError(
+                    f"Temperature out of expected range for {city}: {temperature}"
+                )
 
             insert_weather_data(cursor, city, temperature)
             print(f"Inserted {city}: {temperature}°C")
