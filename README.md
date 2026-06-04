@@ -36,6 +36,20 @@ Analytics layer
 - dotenv
 - Git / GitHub
 
+## Access Control
+
+A dedicated Snowflake role was created following the principle of least privilege.
+
+Role: `weather_analyst`
+
+Permissions:
+- USAGE on warehouse
+- USAGE on database
+- USAGE on analytics schema
+- SELECT on analytics.weather_latest
+
+The role can consume analytics data but cannot modify raw data or create database objects.
+
 ## Project Structure
 
 ```text
